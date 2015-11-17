@@ -2,34 +2,35 @@
 export default class Repository {
 
   constructor(api, Model) {
-    this.resource = null
     this.api = api
     this.Model = Model
   }
 
-  get url() {
-    return this.resource || ''
+  get resource() {
+    return this.path != null
+      ? this.path.match(/[^\/]+/g).join('/')
+      : ''
   }
 
-  create(data = {}) {
-    const { Model } = this
-    return Array.isArray(data)
-      ? data.map(record => new Model(record))
-      : new Model(data)
+  create(json) {
+    return Array.isArray(json)
+      ? json.map(record => new this.Model(record))
+      : new this.Model(json)
   }
 
-  findById(id, { $returning = {} } = {}) {
-    const { url } = this
-    const method = 'get'
-    const path = `${url}/${id}`
-    const query = { $returning }
-    return this.sync(path, method, undefined, query)
+  buildPath(id) {
+    const { resource } = this
+    return [resource, id].filter(path => !!path).join('/')
   }
 
-  sync(method, path, payload, query = {}) {
+  serialize(model) {
+    return model.json
+  }
+
+  sync(method, ...args) {
     return this
-      .api[method](path, payload, query)
-      .then(data => this.create(data))
+      .api[method](...args)
+      .then(json => json ? this.create(json) : undefined)
   }
 
 }

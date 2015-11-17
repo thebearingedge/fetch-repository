@@ -1,65 +1,67 @@
 'use strict';
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-Object.defineProperty(exports, "__esModule", {
+Object.defineProperty(exports, '__esModule', {
   value: true
 });
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 var Repository = (function () {
   function Repository(api, Model) {
     _classCallCheck(this, Repository);
 
-    this.resource = null;
     this.api = api;
     this.Model = Model;
   }
 
   _createClass(Repository, [{
     key: 'create',
-    value: function create() {
-      var data = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-      var Model = this.Model;
+    value: function create(json) {
+      var _this = this;
 
-      return Array.isArray(data) ? data.map(function (record) {
-        return new Model(record);
-      }) : new Model(data);
+      return Array.isArray(json) ? json.map(function (record) {
+        return new _this.Model(record);
+      }) : new this.Model(json);
     }
   }, {
-    key: 'findById',
-    value: function findById(id) {
-      var _ref = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    key: 'buildPath',
+    value: function buildPath(id) {
+      var resource = this.resource;
 
-      var _ref$$returning = _ref.$returning;
-      var $returning = _ref$$returning === undefined ? {} : _ref$$returning;
-      var url = this.url;
-
-      var method = 'get';
-      var path = url + '/' + id;
-      var query = { $returning: $returning };
-      return this.sync(path, method, undefined, query);
+      return [resource, id].filter(function (path) {
+        return !!path;
+      }).join('/');
+    }
+  }, {
+    key: 'serialize',
+    value: function serialize(model) {
+      return model.json;
     }
   }, {
     key: 'sync',
-    value: function sync(method, path, payload) {
-      var _this = this;
+    value: function sync(method) {
+      var _api,
+          _this2 = this;
 
-      var query = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
+      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
+      }
 
-      return this.api[method](path, payload, query).then(function (data) {
-        return _this.create(data);
+      return (_api = this.api)[method].apply(_api, args).then(function (json) {
+        return json ? _this2.create(json) : undefined;
       });
     }
   }, {
-    key: 'url',
+    key: 'resource',
     get: function get() {
-      return this.resource || '';
+      return this.path != null ? this.path.match(/[^\/]+/g).join('/') : '';
     }
   }]);
 
   return Repository;
 })();
 
-exports.default = Repository;
+exports['default'] = Repository;
+module.exports = exports['default'];

@@ -1,12 +1,8 @@
 
-class Model {
+export default class Model {
 
-  static serialize(instance) {
-    return JSON.stringify(instance._data)
-  }
-
-  constructor(data = {}) {
-    this._data = data
+  constructor(json = {}) {
+    this._json = json
   }
 
   get idAttribute() {
@@ -14,10 +10,11 @@ class Model {
   }
 
   get id() {
-    const { idAttribute, _data } = this
-    return _data[idAttribute] || null
+    return this._json[this.idAttribute] || null
+  }
+
+  get json() {
+    return this._json
   }
 
 }
-
-export default Model

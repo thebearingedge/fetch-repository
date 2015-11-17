@@ -5,6 +5,7 @@
     "after": true,
     "afterEach": true,
     "describe": true,
+    "context": true,
     "it": true
   }
 }
