@@ -1,31 +1,29 @@
 
-export function findById(Repository) {
-  Object.defineProperty(Repository.prototype, 'findById', {
-    value: function findById(id, { $returning = {} } = {}) {
+export function findable(Repository) {
+  Object.defineProperty(Repository.prototype, 'find', {
+    value: function find(id, query) {
       const method = 'get'
       const path = this.buildPath(id)
-      const query = { $returning }
       return this.sync(method, path, undefined, query)
     }
   })
 }
 
-export function save(Repository) {
+export function saveable(Repository) {
   Object.defineProperty(Repository.prototype, 'save', {
-    value: function save(model, { patch = false, $returning = {} } = {}) {
+    value: function save(model, query, { patch = false } = {}) {
       const { id } = model
       const body = this.serialize(model)
-      const method = id != null ? patch ? 'patch' : 'put' : 'post'
+      const method = id ? patch ? 'patch' : 'put' : 'post'
       const path = this.buildPath(id)
-      const query = { $returning }
       return this.sync(method, path, body, query)
     }
   })
 }
 
-export function list(Repository) {
-  Object.defineProperty(Repository.prototype, 'list', {
-    value: function list(query = {}) {
+export function searchable(Repository) {
+  Object.defineProperty(Repository.prototype, 'search', {
+    value: function search(query) {
       const method = 'get'
       const path = this.buildPath()
       return this.sync(method, path, undefined, query)
@@ -33,7 +31,7 @@ export function list(Repository) {
   })
 }
 
-export function destroy(Repository) {
+export function destroyable(Repository) {
   Object.defineProperty(Repository.prototype, 'destroy', {
     value: function destroy(model) {
       const { id } = model

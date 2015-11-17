@@ -4,7 +4,8 @@ import sinon from 'sinon'
 import sinonChai from 'sinon-chai'
 import Model from '../src/model'
 import Repository from '../src/repository'
-import { findById, save, list, destroy } from '../src/decorators'
+import * as decorators from '../src/decorators'
+const { findable, saveable, searchable, destroyable } = decorators
 
 chai.use(sinonChai)
 
@@ -18,61 +19,68 @@ beforeEach(() => {
   }, {})
 })
 
-describe('@findById(id, { $returning })', () => {
+describe('@findable', () => {
 
-  let sut
+  let repository
 
   beforeEach(() => {
-    @findById
-    class TestRepository extends Repository {}
-    sut = new TestRepository(api, Model)
-    sut.path = 'test'
+    @findable
+    class Decorated extends Repository {
+      constructor() {
+        super(...arguments)
+        this.path = 'test'
+      }
+    }
+    repository = new Decorated(api, Model)
   })
 
-  it('adds #findById', () => {
-    expect(sut.findById).to.be.ok
+  it('adds #find(id, query)', () => {
+    expect(repository).to.respondTo('find')
   })
 
   it('calls api#get with resource and default query', () => {
     api.get.returns(Promise.resolve())
-    sut.findById(1)
+    repository.find(1)
     expect(api.get)
-      .to.have.been.calledWithExactly('test/1', undefined, { $returning: {} })
+      .to.have.been.calledWithExactly('test/1', undefined, undefined)
   })
 
   it('calls api#get with resource and passed query', () => {
-    const query = { $returning: { columns: ['foo'] } }
+    const query = {}
     api.get.returns(Promise.resolve())
-    sut.findById(1, query)
+    repository.find(1, query)
     expect(api.get)
       .to.have.been.calledWithExactly('test/1', undefined, query)
   })
 
 })
 
-describe('@save(model, { $returning })', () => {
+describe('@saveable', () => {
 
-  const $returning = {}
-  let sut
+  let repository
 
   beforeEach(() => {
-    @save
-    class TestRepository extends Repository {}
-    sut = new TestRepository(api, Model)
-    sut.path = 'test'
+    @saveable
+    class Decorated extends Repository {
+      constructor() {
+        super(...arguments)
+        this.path = 'test'
+      }
+    }
+    repository = new Decorated(api, Model)
   })
 
-  it('adds #save', () => {
-    expect(sut.save).to.be.ok
+  it('adds #save(model, query)', () => {
+    expect(repository).to.respondTo('save')
   })
 
   context('when model has no #id', () => {
     it('calls api#post with model#json', () => {
       api.post.returns(Promise.resolve())
-      const model = new Model({})
-      sut.save(model)
+      const model = new Model()
+      repository.save(model)
       expect(api.post)
-        .to.have.been.calledWithExactly('test', {}, { $returning })
+        .to.have.been.calledWithExactly('test', {}, undefined)
     })
   })
 
@@ -80,90 +88,100 @@ describe('@save(model, { $returning })', () => {
     it('calls api#put with model#json', () => {
       api.put.returns(Promise.resolve())
       const model = new Model({ id: 1 })
-      sut.save(model)
+      repository.save(model)
       expect(api.put)
-        .to.have.been.calledWithExactly('test/1', { id: 1 }, { $returning })
+        .to.have.been.calledWithExactly('test/1', { id: 1 }, undefined)
     })
   })
 
   context('when (model) has an #id', () => {
-    context('and (options) #patch is true', () => {
+    context('and (query) #patch is true', () => {
       it('calls api#patch with model#json', () => {
         api.patch.returns(Promise.resolve())
         const model = new Model({ id: 1 })
-        sut.save(model, { patch: true })
+        repository.save(model, {}, { patch: true })
         expect(api.patch)
-          .to.have.been.calledWithExactly('test/1', { id: 1 }, { $returning })
+          .to.have.been.calledWithExactly('test/1', { id: 1 }, {})
       })
     })
   })
 
 })
 
-describe('@list({ $returning }', () => {
+describe('@searchable', () => {
 
-  let sut
+  let repository
 
   beforeEach(() => {
-    @list
-    class TestRepository extends Repository {}
-    sut = new TestRepository(api, Model)
-    sut.path = 'test'
+    @searchable
+    class Decorated extends Repository {
+      constructor() {
+        super(...arguments)
+        this.path = 'test'
+      }
+    }
+    repository = new Decorated(api, Model)
   })
 
-  it('adds #list', () => {
-    expect(sut.list).to.be.ok
+  it('adds #search(query)', () => {
+    expect(repository).to.respondTo('search')
   })
 
   it('calls api#get with default query', () => {
     api.get.returns(Promise.resolve())
-    sut.list()
-    expect(api.get).to.have.been.calledWithExactly('test', undefined, {})
+    repository.search()
+    expect(api.get)
+      .to.have.been.calledWithExactly('test', undefined, undefined)
   })
 
   it('calls api#get with passed query', () => {
-    const query = { $search: 'foo', $returning: {} }
+    const query = {}
     api.get.returns(Promise.resolve())
-    sut.list(query)
-    expect(api.get).to.have.been.calledWithExactly('test', undefined, query)
+    repository.search(query)
+    expect(api.get)
+      .to.have.been.calledWithExactly('test', undefined, query)
   })
 
 })
 
-describe('@destroy(model)', () => {
+describe('@destroyable', () => {
 
-  let sut
+  let repository
 
   beforeEach(() => {
-    @destroy
-    class TestRepository extends Repository {}
-    sut = new TestRepository(api, Model)
-    sut.path = 'test'
+    @destroyable
+    class Decorated extends Repository {
+      constructor() {
+        super(...arguments)
+        this.path = 'test'
+      }
+    }
+    repository = new Decorated(api, Model)
   })
 
-  it('adds #destroy', () => {
-    expect(sut.destroy).to.be.ok
+  it('adds #destroy(model)', () => {
+    expect(repository).to.respondTo('destroy')
   })
 
   context('when (model) has an #id', () => {
     it('calls api#delete', () => {
       api.delete.returns(Promise.resolve())
       const model = new Model({ id: 1 })
-      sut.destroy(model)
+      repository.destroy(model)
       expect(api.delete)
         .to.have.been.calledWithExactly('test/1')
     })
   })
 
   context('when (model) does not have an #id', () => {
-    it('resolves a fresh instance of the model', () => {
+    it('resolves a fresh instance of #Model', () => {
       api.delete.returns(Promise.resolve())
       const model = new Model()
-      return sut.destroy(model)
+      return repository.destroy(model)
         .then(fresh => {
-          expect(api.delete.called).to.equal(false)
+          expect(api.delete).not.to.have.been.called
           expect(fresh).not.to.equal(model)
-          expect(fresh instanceof Model).to.equal(true)
+          expect(fresh).to.be.instanceOf(Model)
         })
     })
   })

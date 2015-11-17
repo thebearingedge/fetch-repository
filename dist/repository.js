@@ -28,9 +28,7 @@ var Repository = (function () {
   }, {
     key: 'buildPath',
     value: function buildPath(id) {
-      var resource = this.resource;
-
-      return [resource, id].filter(function (path) {
+      return [this.resource, id].filter(function (path) {
         return !!path;
       }).join('/');
     }
@@ -50,13 +48,13 @@ var Repository = (function () {
       }
 
       return (_api = this.api)[method].apply(_api, args).then(function (json) {
-        return json ? _this2.create(json) : undefined;
+        return _this2.create(json);
       });
     }
   }, {
     key: 'resource',
     get: function get() {
-      return this.path != null ? this.path.match(/[^\/]+/g).join('/') : '';
+      return this.path ? this.path.match(/[^\/]+/g).join('/') : null;
     }
   }]);
 

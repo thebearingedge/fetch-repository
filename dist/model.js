@@ -10,7 +10,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var Model = (function () {
   function Model() {
-    var json = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var json = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
 
     _classCallCheck(this, Model);
 
@@ -25,12 +25,15 @@ var Model = (function () {
   }, {
     key: 'id',
     get: function get() {
-      return this._json[this.idAttribute] || null;
+      var _json = this._json;
+      var idAttribute = this.idAttribute;
+
+      return _json ? _json[idAttribute] : null;
     }
   }, {
     key: 'json',
     get: function get() {
-      return this._json;
+      return this._json || {};
     }
   }]);
 

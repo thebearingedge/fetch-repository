@@ -7,9 +7,9 @@ export default class Repository {
   }
 
   get resource() {
-    return this.path != null
+    return this.path
       ? this.path.match(/[^\/]+/g).join('/')
-      : ''
+      : null
   }
 
   create(json) {
@@ -19,8 +19,7 @@ export default class Repository {
   }
 
   buildPath(id) {
-    const { resource } = this
-    return [resource, id].filter(path => !!path).join('/')
+    return [this.resource, id].filter(path => !!path).join('/')
   }
 
   serialize(model) {
@@ -30,7 +29,7 @@ export default class Repository {
   sync(method, ...args) {
     return this
       .api[method](...args)
-      .then(json => json ? this.create(json) : undefined)
+      .then(json => this.create(json))
   }
 
 }

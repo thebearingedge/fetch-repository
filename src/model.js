@@ -1,7 +1,7 @@
 
 export default class Model {
 
-  constructor(json = {}) {
+  constructor(json = null) {
     this._json = json
   }
 
@@ -10,11 +10,12 @@ export default class Model {
   }
 
   get id() {
-    return this._json[this.idAttribute] || null
+    const { _json, idAttribute } = this
+    return _json ? _json[idAttribute] : null
   }
 
   get json() {
-    return this._json
+    return this._json || {}
   }
 
 }
