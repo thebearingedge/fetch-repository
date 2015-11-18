@@ -10,11 +10,11 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var Model = (function () {
   function Model() {
-    var json = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+    var data = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
 
     _classCallCheck(this, Model);
 
-    this._json = json;
+    this._data = data;
   }
 
   _createClass(Model, [{
@@ -25,15 +25,15 @@ var Model = (function () {
   }, {
     key: 'id',
     get: function get() {
-      var _json = this._json;
+      var _data = this._data;
       var idAttribute = this.idAttribute;
 
-      return _json ? _json[idAttribute] : null;
+      return _data ? _data[idAttribute] : null;
     }
   }, {
-    key: 'json',
+    key: 'data',
     get: function get() {
-      return this._json || {};
+      return this._data || {};
     }
   }]);
 

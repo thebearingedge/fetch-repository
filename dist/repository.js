@@ -18,24 +18,25 @@ var Repository = (function () {
 
   _createClass(Repository, [{
     key: 'create',
-    value: function create(json) {
+    value: function create(data) {
       var _this = this;
 
-      return Array.isArray(json) ? json.map(function (record) {
-        return new _this.Model(record);
-      }) : new this.Model(json);
+      return Array.isArray(data) ? data.map(function (datum) {
+        return new _this.Model(datum);
+      }) : new this.Model(data);
     }
   }, {
     key: 'buildPath',
     value: function buildPath(id) {
-      return [this.resource, id].filter(function (path) {
-        return !!path;
+      var parts = [this.resource, id];
+      return parts.filter(function (part) {
+        return !!part;
       }).join('/');
     }
   }, {
     key: 'serialize',
     value: function serialize(model) {
-      return model.json;
+      return model.data;
     }
   }, {
     key: 'sync',
@@ -47,14 +48,15 @@ var Repository = (function () {
         args[_key - 1] = arguments[_key];
       }
 
-      return (_api = this.api)[method].apply(_api, args).then(function (json) {
-        return _this2.create(json);
+      return (_api = this.api)[method].apply(_api, args).then(function (data) {
+        return _this2.create(data);
       });
     }
   }, {
     key: 'resource',
     get: function get() {
-      return this.path ? this.path.match(/[^\/]+/g).join('/') : null;
+      if (!this.path) return null;
+      return this.path.match(/[^\/]+/g).join('/');
     }
   }]);
 

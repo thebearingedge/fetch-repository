@@ -7,29 +7,29 @@ export default class Repository {
   }
 
   get resource() {
-    return this.path
-      ? this.path.match(/[^\/]+/g).join('/')
-      : null
+    if (!this.path) return null
+    return this.path.match(/[^\/]+/g).join('/')
   }
 
-  create(json) {
-    return Array.isArray(json)
-      ? json.map(record => new this.Model(record))
-      : new this.Model(json)
+  create(data) {
+    return Array.isArray(data)
+      ? data.map(datum => new this.Model(datum))
+      : new this.Model(data)
   }
 
   buildPath(id) {
-    return [this.resource, id].filter(path => !!path).join('/')
+    const parts = [this.resource, id]
+    return parts.filter(part => !!part).join('/')
   }
 
   serialize(model) {
-    return model.json
+    return model.data
   }
 
   sync(method, ...args) {
     return this
       .api[method](...args)
-      .then(json => this.create(json))
+      .then(data => this.create(data))
   }
 
 }

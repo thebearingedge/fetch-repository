@@ -1,8 +1,8 @@
 
 export default class Model {
 
-  constructor(json = null) {
-    this._json = json
+  constructor(data = null) {
+    this._data = data
   }
 
   get idAttribute() {
@@ -10,12 +10,12 @@ export default class Model {
   }
 
   get id() {
-    const { _json, idAttribute } = this
-    return _json ? _json[idAttribute] : null
+    const { _data, idAttribute } = this
+    return _data ? _data[idAttribute] : null
   }
 
-  get json() {
-    return this._json || {}
+  get data() {
+    return this._data || {}
   }
 
 }

@@ -30,7 +30,7 @@ describe('Repository', () => {
 
   })
 
-  describe('create(json)', () => {
+  describe('create(data)', () => {
 
     let repository, SpyModel
 
@@ -39,19 +39,19 @@ describe('Repository', () => {
       repository = new Repository(api, SpyModel)
     })
 
-    context('when (json) is not an Array', () => {
-      it('instantiates the Model with (json)', () => {
-        const json = {}
-        const model = repository.create(json)
-        expect(SpyModel).to.have.been.calledWithExactly(json)
+    context('when (data) is not an Array', () => {
+      it('instantiates the Model with (data)', () => {
+        const data = {}
+        const model = repository.create(data)
+        expect(SpyModel).to.have.been.calledWithExactly(data)
         expect(model).to.be.instanceOf(SpyModel)
       })
     })
 
-    context('when (json) is an array', () => {
+    context('when (data) is an array', () => {
       it('instantiates an array of models', () => {
-        const json = [{}, {}]
-        const models = repository.create(json)
+        const data = [{}, {}]
+        const models = repository.create(data)
         expect(models).to.be.instanceOf(Array)
         models.forEach(model => {
           expect(model).to.be.instanceOf(SpyModel)
@@ -163,12 +163,12 @@ describe('Repository', () => {
 
   describe('serialize(model)', () => {
 
-    it('returns model#json', () => {
-      const json = {}
+    it('returns model#data', () => {
+      const data = {}
       const repository = new Repository(api, Model)
-      const model = repository.create(json)
+      const model = repository.create(data)
       const serialized = repository.serialize(model)
-      expect(serialized).to.equal(model.json)
+      expect(serialized).to.equal(model.data)
     })
 
   })

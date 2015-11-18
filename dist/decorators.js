@@ -10,37 +10,36 @@ exports.destroyable = destroyable;
 
 function findable(Repository) {
   Object.defineProperty(Repository.prototype, 'find', {
-    value: function find(id, query) {
-      var method = 'get';
+    value: function find(id, params) {
+      var action = 'fetch';
       var path = this.buildPath(id);
-      return this.sync(method, path, undefined, query);
+      return this.sync(action, path, undefined, params);
     }
   });
 }
 
 function saveable(Repository) {
   Object.defineProperty(Repository.prototype, 'save', {
-    value: function save(model, query) {
+    value: function save(model, params) {
       var _ref = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
-      var _ref$patch = _ref.patch;
-      var patch = _ref$patch === undefined ? false : _ref$patch;
-      var id = model.id;
+      var _ref$replace = _ref.replace;
+      var replace = _ref$replace === undefined ? false : _ref$replace;
 
       var body = this.serialize(model);
-      var method = id ? patch ? 'patch' : 'put' : 'post';
-      var path = this.buildPath(id);
-      return this.sync(method, path, body, query);
+      var action = model.id ? replace ? 'replace' : 'update' : 'create';
+      var path = this.buildPath(model.id);
+      return this.sync(action, path, body, params);
     }
   });
 }
 
 function searchable(Repository) {
   Object.defineProperty(Repository.prototype, 'search', {
-    value: function search(query) {
-      var method = 'get';
+    value: function search(params) {
+      var action = 'fetch';
       var path = this.buildPath();
-      return this.sync(method, path, undefined, query);
+      return this.sync(action, path, undefined, params);
     }
   });
 }
@@ -48,12 +47,10 @@ function searchable(Repository) {
 function destroyable(Repository) {
   Object.defineProperty(Repository.prototype, 'destroy', {
     value: function destroy(model) {
-      var id = model.id;
-
-      if (id == null) return Promise.resolve(this.create({}));
-      var method = 'delete';
-      var path = this.buildPath(id);
-      return this.sync(method, path);
+      if (!model.id) return Promise.resolve(this.create({}));
+      var action = 'destroy';
+      var path = this.buildPath(model.id);
+      return this.sync(action, path);
     }
   });
 }
