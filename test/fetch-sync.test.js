@@ -2,44 +2,47 @@
 import { expect } from 'chai'
 import sinon from 'sinon'
 import stringify from 'qs/lib/stringify'
-import FetchSync from '../src/fetch-sync'
+import Sync from '../src/fetch-sync'
 
-describe('FetchSync', () => {
+describe('Sync', () => {
 
   describe('constructor(fetch, options)', () => {
     it('has #fetch, #origin, #base, and #headers properties', () => {
       const fetch = () => {}
       let base, headers, sync
-      sync = new FetchSync(fetch)
+      sync = new Sync(fetch)
       expect(sync).to.have.property('fetch', fetch)
       expect(sync).to.have.property('base', null)
       base = '/foo'
       headers = { 'x-test-header': 'bar' }
-      sync = new FetchSync(fetch, { base, headers })
+      sync = new Sync(fetch, { base, headers })
       expect(sync).to.have.property('fetch', fetch)
       expect(sync).to.have.property('base', '/foo')
       expect(sync).to.have.property('headers', headers)
       base = '/foo/'
-      sync = new FetchSync(fetch, { base })
+      sync = new Sync(fetch, { base })
       expect(sync).to.have.property('base', '/foo')
     })
   })
 
   describe('onRejection(err)', () => {
 
-    let sync
+    let fetch, sync
 
-    beforeEach(() => sync = new FetchSync(() => {}))
+    beforeEach(() => {
+      fetch = sinon.stub()
+      sync = new Sync(fetch)
+    })
 
     context('when fetch is rejected', () => {
       it('is called', () => {
         const reason = new Error()
-        sinon.stub(sync, 'fetch').returns(Promise.reject(reason))
-        const spy = sinon.spy(sync, 'onRejection')
+        fetch.returns(Promise.reject(reason))
+        const onRejection = sinon.spy(sync, 'onRejection')
         return sync
           .send()
           .catch(err => {
-            expect(spy).to.have.been.calledOnce
+            expect(onRejection).to.have.been.calledOnce
             expect(err).to.equal(reason)
           })
       })
@@ -48,12 +51,12 @@ describe('FetchSync', () => {
     context('when fetch is fulfilled', () => {
       it('is not called', () => {
         const res = { json() {} }
-        sinon.stub(sync, 'fetch').returns(Promise.resolve(res))
-        const spy = sinon.spy(sync, 'onRejection')
+        fetch.returns(Promise.resolve(res))
+        const onRejection = sinon.spy(sync, 'onRejection')
         return sync
           .send()
           .then(() => {
-            expect(spy).not.to.have.been.called
+            expect(onRejection).not.to.have.been.called
           })
       })
     })
@@ -62,12 +65,28 @@ describe('FetchSync', () => {
 
   describe('send(method, path, body, params, headers)', () => {
 
-    let sync, res, fetch
+    let res, fetch, sync
 
     beforeEach(() => {
-      sync = new FetchSync(() => {})
       res = { json() {} }
-      fetch = sinon.stub(sync, 'fetch').returns(Promise.resolve(res))
+      fetch = sinon.stub().returns(Promise.resolve(res))
+      sync = new Sync(fetch)
+    })
+
+    it('is called by actions and passed the correct method', () => {
+      const actionMap = {
+        read: 'GET',
+        create: 'POST',
+        replace: 'PUT',
+        update: 'PATCH',
+        destroy: 'DELETE'
+      }
+      Object.keys(actionMap).forEach(action => {
+        const send = sinon.stub(sync, 'send')
+        sync[action]()
+        expect(send).to.have.been.calledWith(actionMap[action])
+        send.restore()
+      })
     })
 
     it('merges headers', () => {
