@@ -26,10 +26,10 @@ export default class Repository {
     return model.data
   }
 
-  sync(method, ...args) {
+  sync(action, ...args) {
     return this
-      .api[method](...args)
-      .then(data => this.create(data))
+      .api[action](...args)
+      .then(data => data ? this.create(data) : undefined)
   }
 
 }

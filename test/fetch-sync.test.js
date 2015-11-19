@@ -1,7 +1,7 @@
 
 import { expect } from 'chai'
 import sinon from 'sinon'
-import { stringify } from 'qs'
+import stringify from 'qs/lib/stringify'
 import FetchSync from '../src/fetch-sync'
 
 describe('FetchSync', () => {

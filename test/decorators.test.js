@@ -10,20 +10,12 @@ const { findable, saveable, searchable, destroyable } = decorators
 chai.use(sinonChai)
 
 const { expect } = chai
-let api
 
 describe('decorators', () => {
 
-  beforeEach(() => {
-    const methods = ['fetch', 'replace', 'create', 'update', 'destroy']
-    api = methods.reduce((api, method) => {
-      return Object.assign(api, { [method]: sinon.stub() })
-    }, {})
-  })
-
   describe('@findable', () => {
 
-    let repository
+    let api, repository
 
     beforeEach(() => {
       @findable
@@ -33,6 +25,7 @@ describe('decorators', () => {
           this.path = 'test'
         }
       }
+      api = { read: sinon.stub() }
       repository = new Decorated(api, Model)
     })
 
@@ -40,18 +33,18 @@ describe('decorators', () => {
       expect(repository).to.respondTo('find')
     })
 
-    it('calls api#fetch with resource and default query', () => {
-      api.fetch.returns(Promise.resolve())
+    it('calls api#read with resource and default query', () => {
+      api.read.returns(Promise.resolve())
       repository.find(1)
-      expect(api.fetch)
+      expect(api.read)
         .to.have.been.calledWithExactly('test/1', undefined, undefined)
     })
 
-    it('calls api#fetch with resource and passed query', () => {
+    it('calls api#read with resource and passed query', () => {
       const query = {}
-      api.fetch.returns(Promise.resolve())
+      api.read.returns(Promise.resolve())
       repository.find(1, query)
-      expect(api.fetch)
+      expect(api.read)
         .to.have.been.calledWithExactly('test/1', undefined, query)
     })
 
@@ -59,7 +52,7 @@ describe('decorators', () => {
 
   describe('@saveable', () => {
 
-    let repository
+    let api, repository
 
     beforeEach(() => {
       @saveable
@@ -69,6 +62,7 @@ describe('decorators', () => {
           this.path = 'test'
         }
       }
+      api = {}
       repository = new Decorated(api, Model)
     })
 
@@ -78,7 +72,7 @@ describe('decorators', () => {
 
     context('when model has no #id', () => {
       it('calls api#create with model#data', () => {
-        api.create.returns(Promise.resolve())
+        api.create = sinon.stub().returns(Promise.resolve())
         const model = new Model()
         repository.save(model)
         expect(api.create)
@@ -88,7 +82,7 @@ describe('decorators', () => {
 
     context('when model has an #id', () => {
       it('calls api#update with model#data', () => {
-        api.update.returns(Promise.resolve())
+        api.update = sinon.stub().returns(Promise.resolve())
         const model = new Model({ id: 1 })
         repository.save(model)
         expect(api.update)
@@ -99,7 +93,7 @@ describe('decorators', () => {
     context('when (model) has an #id', () => {
       context('and (options)#replace is true', () => {
         it('calls api#replace with model#data', () => {
-          api.replace.returns(Promise.resolve())
+          api.replace = sinon.stub().returns(Promise.resolve())
           const model = new Model({ id: 1 })
           repository.save(model, {}, { replace: true })
           expect(api.replace)
@@ -108,11 +102,35 @@ describe('decorators', () => {
       })
     })
 
+    context('when (model) is an array', () => {
+      it('it calls api#update on the resource', () => {
+        api.update = sinon.stub().returns(Promise.resolve([]))
+        const data = [{ id: 1 }, { id: 2 }]
+        const models = data.map(data => new Model(data))
+        repository.save(models)
+        expect(api.update)
+          .to.have.been.calledWithExactly('test', data, undefined)
+      })
+    })
+
+    context('when (model) is an array', () => {
+      context('and (options)#replace is true', () => {
+        it('it calls api#replace on the resource', () => {
+          api.replace = sinon.stub().returns(Promise.resolve([]))
+          const data = [{ id: 1 }, { id: 2 }]
+          const models = data.map(data => new Model(data))
+          repository.save(models, {}, { replace: true })
+          expect(api.replace)
+            .to.have.been.calledWithExactly('test', data, {})
+        })
+      })
+    })
+
   })
 
   describe('@searchable', () => {
 
-    let repository
+    let api, repository
 
     beforeEach(() => {
       @searchable
@@ -122,6 +140,7 @@ describe('decorators', () => {
           this.path = 'test'
         }
       }
+      api = { read: sinon.stub() }
       repository = new Decorated(api, Model)
     })
 
@@ -129,18 +148,18 @@ describe('decorators', () => {
       expect(repository).to.respondTo('search')
     })
 
-    it('calls api#fetch with default query', () => {
-      api.fetch.returns(Promise.resolve())
+    it('calls api#read with default query', () => {
+      api.read.returns(Promise.resolve())
       repository.search()
-      expect(api.fetch)
+      expect(api.read)
         .to.have.been.calledWithExactly('test', undefined, undefined)
     })
 
-    it('calls api#fetch with passed query', () => {
+    it('calls api#read with passed query', () => {
       const query = {}
-      api.fetch.returns(Promise.resolve())
+      api.read.returns(Promise.resolve())
       repository.search(query)
-      expect(api.fetch)
+      expect(api.read)
         .to.have.been.calledWithExactly('test', undefined, query)
     })
 
@@ -148,7 +167,7 @@ describe('decorators', () => {
 
   describe('@destroyable', () => {
 
-    let repository
+    let api, repository
 
     beforeEach(() => {
       @destroyable
@@ -158,6 +177,7 @@ describe('decorators', () => {
           this.path = 'test'
         }
       }
+      api = {}
       repository = new Decorated(api, Model)
     })
 
@@ -167,23 +187,55 @@ describe('decorators', () => {
 
     context('when (model) has an #id', () => {
       it('calls api#destroy', () => {
-        api.destroy.returns(Promise.resolve())
+        api.destroy = sinon.stub().returns(Promise.resolve())
         const model = new Model({ id: 1 })
         repository.destroy(model)
         expect(api.destroy)
-          .to.have.been.calledWithExactly('test/1')
+          .to.have.been.calledWithExactly('test/1', {})
       })
     })
 
     context('when (model) does not have an #id', () => {
-      it('resolves a fresh instance of #Model', () => {
-        api.destroy.returns(Promise.resolve())
+      it('does not call api#destroy', () => {
+        api.destroy = sinon.stub().returns(Promise.resolve())
         const model = new Model()
-        return repository.destroy(model)
-          .then(fresh => {
+        return repository
+          .destroy(model)
+          .then(returned => {
             expect(api.destroy).not.to.have.been.called
-            expect(fresh).not.to.equal(model)
-            expect(fresh).to.be.instanceOf(Model)
+            expect(returned).to.be.undefined
+          })
+      })
+    })
+
+    context('when (model) is an array', () => {
+      it('updates the resource with existing model data', () => {
+        api.update = sinon.stub().returns(Promise.resolve())
+        api.destroy = sinon.stub().returns(Promise.reject())
+        const data = [{ id: 1 }, {}]
+        const models = data.map(datum => new Model(datum))
+        const $destroy = true
+        return repository
+          .destroy(models, {})
+          .then(returned => {
+            expect(api.update)
+              .to.have.been.calledWithExactly('test', [data[0]], { $destroy })
+            expect(api.destroy).not.to.have.been.called
+            expect(returned).to.be.undefined
+          })
+      })
+    })
+
+    context('when (model) is an array of new models', () => {
+      it('clears the models', () => {
+        api.update = sinon.stub().returns(Promise.reject())
+        api.destroy = sinon.stub().returns(Promise.reject())
+        const data = [{ foo: 'bar' }, { baz: 'qux' }]
+        const models = data.map(datum => new Model(datum))
+        return repository
+          .destroy(models)
+          .then(() => {
+            models.forEach(model => expect(model.data).to.deep.equal({}))
           })
       })
     })

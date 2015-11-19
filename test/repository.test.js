@@ -14,7 +14,7 @@ describe('Repository', () => {
   let api
 
   beforeEach(() => {
-    const methods = [ 'get', 'put', 'post', 'patch', 'delete' ]
+    const methods = [ 'read', 'replace', 'create', 'update', 'destroy' ]
     api = methods.reduce((api, method) => {
       return Object.assign(api, { [method]: sinon.spy() })
     }, {})
@@ -143,17 +143,17 @@ describe('Repository', () => {
     beforeEach(() => repository = new Repository(api, Model))
 
     it('calls (method) on #api with (...args)', () => {
-      api.get = sinon.stub().returns(Promise.resolve())
+      api.read = sinon.stub().returns(Promise.resolve())
       const args = ['test', {}, {}]
-      return repository.sync('get', ...args)
+      return repository.sync('read', ...args)
         .then(() => {
-          expect(api.get).to.have.been.calledWithExactly('test', {}, {})
+          expect(api.read).to.have.been.calledWithExactly('test', {}, {})
         })
     })
 
     it('returns a new instance of #Model', () => {
-      api.get = () => Promise.resolve()
-      return repository.sync('get')
+      api.read = () => Promise.resolve({})
+      return repository.sync('read')
         .then(model => {
           expect(model).to.be.instanceOf(Model)
         })
