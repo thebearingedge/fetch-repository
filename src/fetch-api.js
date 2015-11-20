@@ -1,5 +1,5 @@
 
-export default class FetchSync {
+export default class FetchApi {
 
   constructor(fetch, { base, headers } = {}) {
     if (!base || base === '/') {
@@ -54,7 +54,7 @@ const actionMap = {
 }
 
 Object.keys(actionMap).forEach(action => {
-  Object.defineProperty(FetchSync.prototype, action, {
+  Object.defineProperty(FetchApi.prototype, action, {
     value: function () {
       const args = [actionMap[action], ...arguments]
       return this.send(...args)

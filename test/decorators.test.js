@@ -191,7 +191,7 @@ describe('decorators', () => {
         const model = new Model({ id: 1 })
         repository.destroy(model)
         expect(api.destroy)
-          .to.have.been.calledWithExactly('test/1', {})
+          .to.have.been.calledWithExactly('test/1', undefined, {})
       })
     })
 
