@@ -1,40 +1,41 @@
 {
-  "name": "fetch-repository",
+  "name": "mini-repository",
   "version": "0.0.1",
-  "description": "A Repository Class",
-  "main": "index.js",
+  "description": "A Repository Library",
+  "main": "lib/index.js",
   "scripts": {
     "lint": "eslint src && eslint test",
     "pretest": "npm run lint",
     "test": "mocha --compilers js:babel/register",
-    "tdd": "mocha --compilers js:babel/register --reporter min --watch",
+    "dev": "mocha --compilers js:babel/register --reporter min --watch",
     "precover": "npm run lint",
     "cover": "./node_modules/.bin/babel-node ./node_modules/.bin/babel-istanbul cover _mocha",
-    "prebuild": "npm run test",
-    "build": "babel src --out-dir dist",
-    "prepublish": "npm run build"
+    "precompile": "npm run test",
+    "compile": "babel src --out-dir lib",
+    "prepublish": "npm run compile"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/thebearingedge/fetch-repository.git"
+    "url": "git+https://github.com/thebearingedge/mini-repository.git"
   },
   "author": "Tim Davis",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/thebearingedge/fetch-repository/issues"
+    "url": "https://github.com/thebearingedge/mini-repository/issues"
   },
-  "homepage": "https://github.com/thebearingedge/fetch-repository#readme",
+  "homepage": "https://github.com/thebearingedge/mini-repository#readme",
   "devDependencies": {
     "babel": "5.8.23",
     "babel-eslint": "4.1.5",
     "babel-istanbul": "0.4.0",
     "chai": "3.4.1",
     "eslint": "1.9.0",
-    "fetch-mock": "2.3.0",
     "mocha": "2.3.4",
-    "node-fetch": "1.3.3",
-    "qs": "^6.0.0",
     "sinon": "1.17.2",
     "sinon-chai": "2.8.0"
+  },
+  "dependencies": {
+    "qs": "6.0.0",
+    "deep-clone": "1.0.0"
   }
 }

@@ -1,21 +1,16 @@
 
 export default class Model {
 
-  constructor(data = null) {
+  constructor(data = {}) {
     this._data = data
   }
 
-  get idAttribute() {
-    return 'id'
-  }
+  get idAttribute() { return 'id' }
+
+  get data() { return this._data }
 
   get id() {
-    const { _data, idAttribute } = this
-    return _data ? _data[idAttribute] : null
-  }
-
-  get data() {
-    return this._data || {}
+    return this._data[this.idAttribute] || null
   }
 
 }

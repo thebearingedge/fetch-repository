@@ -1,45 +1,53 @@
 
+import stringify from 'qs/lib/stringify'
+
 export default class FetchApi {
 
-  constructor(fetch, { base, headers } = {}) {
-    if (!base || base === '/') {
-      this.base = null
-    }
-    else if (base.endsWith('/')) {
-      this.base = base.slice(0, base.length - 1)
-    }
-    else {
-      this.base = base
-    }
+  constructor(fetch) {
     this.fetch = fetch
-    this.headers = headers
   }
 
-  parseQuery() {}
+  get base() {
+    return null
+  }
 
-  parseResponse(res) { return res.json() }
+  get headers() {
+    return { 'content-type': 'application/json' }
+  }
 
-  parseBody(body) { return JSON.stringify(body) }
+  format(body) {
+    return JSON.stringify(body)
+  }
 
-  onBeforeSend(url, options) { return [url, options] }
+  onBeforeFetch(url, options) {
+    return Promise.resolve(arguments)
+  }
 
-  onRejection(err) { throw err }
+  onResponse(res) {
+    return Promise.resolve(res.json())
+  }
 
-  send(method, path, body, params, _headers) {
+  parse(data) {
+    return data
+  }
+
+  onRejection(err) {
+    throw err
+  }
+
+  send(method, path, payload, params) {
     const { base, headers } = this
     let url = base || ''
     if (path) url += '/' + path.match(/[^\/]+/g).join('/')
-    const queryString = this.parseQuery(params)
+    const queryString = stringify(params)
     if (queryString) url += '?' + queryString
-    const options = {
-      method,
-      headers: Object.assign({}, headers, _headers),
-      body: this.parseBody(body)
-    }
-    return Promise
-      .resolve(this.onBeforeSend(url, options))
-      .then((args) => this.fetch(...args))
-      .then(res => this.parseResponse(res))
+    const body = this.format(payload)
+    const options = { method, body, headers }
+    return this
+      .onBeforeFetch(url, options)
+      .then(args => this.fetch(...args))
+      .then(res => this.onResponse(res))
+      .then(data => this.parse(data))
       .catch(err => this.onRejection(err))
   }
 

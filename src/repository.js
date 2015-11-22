@@ -1,47 +1,45 @@
 
+import deepClone from 'deep-clone'
+import Model from './model'
+
 export default class Repository {
 
-  constructor(api, Model) {
+  constructor(api) {
     this.api = api
-    this.Model = Model
   }
 
-  get resource() {
-    if (!this.path) return null
-    return this.path.match(/[^\/]+/g).join('/')
-  }
+  get collection() { return null }
+
+  get Model() { return Model }
 
   get cache() {
-    return this._cache
+    const { _cache } = this
+    return _cache ? this.create(_cache) : null
   }
 
   clear() {
-    this._cache = null
+    delete this._cache
   }
 
-  create(data) {
+  create(_data) {
+    const data = deepClone(_data)
     return Array.isArray(data)
       ? data.map(datum => new this.Model(datum))
       : new this.Model(data)
   }
 
-  buildPath(id) {
-    const parts = [this.resource, id]
-    return parts.filter(part => !!part).join('/')
-  }
-
   serialize(model) {
-    return model.data
+    return deepClone(model.data)
   }
 
-  sync(action, path, body, params, { cache = false } = {}) {
+  sync(action, resource, payload, params, { cache = false } = {}) {
     return this
-      .api[action](path, body, params)
+      .api[action](resource, payload, params)
       .then(data => {
         this.clear()
         if (!data) return
-        const created = this.create(data)
-        return cache ? (this._cache = created) : created
+        if (cache) this._cache = deepClone(data)
+        return data
       })
   }
 

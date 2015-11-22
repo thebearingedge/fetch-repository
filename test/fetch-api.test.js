@@ -1,27 +1,18 @@
 
 import { expect } from 'chai'
 import sinon from 'sinon'
-import stringify from 'qs/lib/stringify'
 import FetchApi from '../src/fetch-api'
 
 describe('FetchApi', () => {
 
-  describe('constructor(fetch, options)', () => {
-    it('has #fetch, #origin, #base, and #headers properties', () => {
+  describe('constructor(fetch, { base, headers })', () => {
+    it('has default #base and #headers properties', () => {
       const fetch = () => {}
-      let base, headers, api
-      api = new FetchApi(fetch)
-      expect(api).to.have.property('fetch', fetch)
+      const api = new FetchApi(fetch)
       expect(api).to.have.property('base', null)
-      base = '/foo'
-      headers = { 'x-test-header': 'bar' }
-      api = new FetchApi(fetch, { base, headers })
-      expect(api).to.have.property('fetch', fetch)
-      expect(api).to.have.property('base', '/foo')
-      expect(api).to.have.property('headers', headers)
-      base = '/foo/'
-      api = new FetchApi(fetch, { base })
-      expect(api).to.have.property('base', '/foo')
+      expect(api).to.have.property('headers').that.deep.equals({
+        'content-type': 'application/json'
+      })
     })
   })
 
@@ -65,15 +56,10 @@ describe('FetchApi', () => {
 
   describe('send(method, path, body, params, headers)', () => {
 
-    let res, fetch, api
-
-    beforeEach(() => {
-      res = { json() {} }
-      fetch = sinon.stub().returns(Promise.resolve(res))
-      api = new FetchApi(fetch)
-    })
-
     it('is called by actions and passed the correct method', () => {
+      const res = { json() {} }
+      const fetch = sinon.stub().returns(Promise.resolve(res))
+      const api = new FetchApi(fetch)
       const actionMap = {
         read: 'GET',
         create: 'POST',
@@ -83,25 +69,17 @@ describe('FetchApi', () => {
       }
       Object.keys(actionMap).forEach(action => {
         const send = sinon.stub(api, 'send')
+        const method = actionMap[action]
         api[action]()
-        expect(send).to.have.been.calledWith(actionMap[action])
+        expect(send).to.have.been.calledWith(method)
         send.restore()
       })
     })
 
-    it('merges headers', () => {
-      api.headers = { foo: 'bar' }
-      const merged = { foo: 'bar', baz: 'qux' }
-      return api
-        .send(null, null, null, null, { baz: 'qux' })
-        .then(() => {
-          const options = fetch.getCall(0).args[1]
-          expect(options).to.have.property('headers').eql(merged)
-        })
-    })
-
     it('parses query params', () => {
-      api.parseQuery = params => stringify(params)
+      const res = { json() {} }
+      const fetch = sinon.stub().returns(Promise.resolve(res))
+      const api = new FetchApi(fetch)
       return api
         .send(null, null, null, ({ foo: 'bar' }))
         .then(() => {
@@ -111,8 +89,15 @@ describe('FetchApi', () => {
     })
 
     it('builds a url', () => {
-      api.base = 'foo'
-      api.parseQuery = params => stringify(params)
+      class WithBase extends FetchApi {
+        constructor(fetch) {
+          super(fetch)
+        }
+        get base() { return 'foo' }
+      }
+      const res = { json() {} }
+      const fetch = sinon.stub().returns(Promise.resolve(res))
+      const api = new WithBase(fetch)
       return api
         .send(null, '/bar', null, ({ baz: 'qux' }))
         .then(() => {
