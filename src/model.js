@@ -1,4 +1,6 @@
 
+import deepClone from 'deep-clone'
+
 export default class Model {
 
   constructor(data = {}) {
@@ -7,7 +9,9 @@ export default class Model {
 
   get idAttribute() { return 'id' }
 
-  get data() { return this._data }
+  get data() {
+    return deepClone(this._data)
+  }
 
   get id() {
     return this._data[this.idAttribute] || null

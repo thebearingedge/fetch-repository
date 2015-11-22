@@ -29,7 +29,7 @@ export default class Repository {
   }
 
   serialize(model) {
-    return deepClone(model.data)
+    return model.data
   }
 
   sync(action, resource, payload, params, { cache = false } = {}) {

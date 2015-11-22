@@ -1,33 +1,33 @@
 
 export function findable(Repository) {
-  addMethod(Repository, 'find', function () {
+  decorate(Repository, 'find', function () {
     return find
       .call(this, ...arguments)
       .then(data => this.create(data))
   })
-  addMethod(Repository, 'loadFind', loadFind)
+  decorate(Repository, 'loadFind', loadFind)
 }
 
 export function listable(Repository) {
-  addMethod(Repository, 'list', function () {
+  decorate(Repository, 'list', function () {
     return list
       .call(this, ...arguments)
       .then(data => this.create(data))
   })
-  addMethod(Repository, 'loadList', loadList)
+  decorate(Repository, 'loadList', loadList)
 }
 
 export function searchable(Repository) {
-  addMethod(Repository, 'search', function () {
+  decorate(Repository, 'search', function () {
     return search
       .call(this, ...arguments)
       .then(data => this.create(data))
   })
-  addMethod(Repository, 'loadSearch', loadSearch)
+  decorate(Repository, 'loadSearch', loadSearch)
 }
 
 export function saveable(Repository) {
-  addMethod(Repository, 'save', function () {
+  decorate(Repository, 'save', function () {
     return save
       .call(this, ...arguments)
       .then(data => this.create(data))
@@ -35,7 +35,7 @@ export function saveable(Repository) {
 }
 
 export function destroyable(Repository) {
-  addMethod(Repository, 'destroy', destroy)
+  decorate(Repository, 'destroy', destroy)
 }
 
 function find(id, params = null, { cache = false } = {}) {
@@ -107,7 +107,7 @@ function destroy(model, params = {}) {
   return promise.then(() => models.forEach(model => model._data = null))
 }
 
-function addMethod(Class, prop, fn) {
+function decorate(Class, prop, fn) {
   Object.defineProperty(Class.prototype, prop, { value: fn })
 }
 

@@ -36,6 +36,6 @@
   },
   "dependencies": {
     "qs": "6.0.0",
-    "deep-clone": "1.0.0"
+    "deep-clone": "1.0.1"
   }
 }
