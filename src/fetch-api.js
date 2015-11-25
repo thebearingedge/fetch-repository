@@ -27,8 +27,8 @@ export default class FetchApi {
     return Promise.resolve(res.json())
   }
 
-  parse(data) {
-    return data
+  parse(json) {
+    return json ? json.data : json
   }
 
   onRejection(err) {
