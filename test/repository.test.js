@@ -14,10 +14,9 @@ describe('Repository', () => {
   let api
 
   beforeEach(() => {
+    api = {}
     const actions = [ 'read', 'replace', 'create', 'update', 'destroy' ]
-    api = actions.reduce((api, method) => {
-      return Object.assign(api, { [method]: sinon.stub() })
-    }, {})
+    actions.forEach(action => api[action] = sinon.stub())
   })
 
   describe('create(data)', () => {
@@ -77,9 +76,7 @@ describe('Repository', () => {
 
     it('returns (model)#data', () => {
       class TestRepository extends Repository {
-        constructor(api) {
-          super(api)
-        }
+        constructor(api) { super(api) }
         get Model() { return Model }
       }
       const repository = new TestRepository(api)
