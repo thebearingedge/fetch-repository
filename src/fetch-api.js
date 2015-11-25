@@ -24,7 +24,7 @@ export default class FetchApi {
   }
 
   onResponse(res) {
-    return Promise.resolve(res.json())
+    return res.json()
   }
 
   parse(json) {

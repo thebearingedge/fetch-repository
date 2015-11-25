@@ -112,9 +112,8 @@ function decorate(Class, prop, fn) {
 }
 
 function buildPath(id) {
-  let path = this.collection || ''
-  if (id) path += ('/' + id)
-  return path
+  const path = this.collection || ''
+  return id ? path + '/' + id : path
 }
 
 function load(query, criteria, params) {
